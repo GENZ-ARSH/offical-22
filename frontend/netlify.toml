@@ -1,0 +1,19 @@
+[build]
+  publish = "frontend"
+  command = "echo 'No build command needed'"
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+  conditions = { "Cookie" = ["accessToken=;"] }
+
+[[redirects]]
+  from = "/protected.html"
+  to = "/protected.html"
+  status = 200
+
+[[redirects]]
+  from = "/admin.html"
+  to = "/admin.html"
+  status = 200

@@ -1,0 +1,825 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GenZZ Library</title>
+    <link rel="icon" href="./assets/favicon.ico">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            @apply bg-gradient-to-b from-yellow-200 to-sky-200 text-gray-800 dark:bg-gray-900 dark:text-gray-100;
+            transition: all 0.3s ease;
+            scroll-behavior: smooth;
+        }
+        h1, h2, h3, h4, h5, h6, .btn {
+            font-family: 'Poppins', sans-serif;
+        }
+        header {
+            @apply bg-yellow-600 dark:bg-gray-800/90 backdrop-blur-lg;
+        }
+        header .main-logo {
+            @apply text-white;
+        }
+        .card {
+            @apply bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden relative;
+            transform: perspective(1000px) rotateY(0deg) rotateX(0deg);
+            transition: transform 0.4s ease, box-shadow 0.4s ease, border 0.4s ease, background 0.4s ease;
+            cursor: pointer;
+            border: 2px solid transparent;
+        }
+        .card:hover {
+            transform: perspective(1000px) rotateY(5deg) rotateX(-5deg) scale(1.1);
+            box-shadow: 0 0 20px rgba(250, 204, 21, 0.8), 0 0 30px rgba(14, 165, 233, 0.5);
+            border-color: #facc15;
+            background: linear-gradient(45deg, #bfdbfe, #facc15);
+        }
+        .card.clicked {
+            @apply bg-gradient-to-r from-yellow-400 to-orange-500 text-white;
+            border-color: #f97316;
+            animation: pop 0.3s ease;
+        }
+        .card-img-top {
+            @apply w-full h-48 object-cover;
+        }
+        .btn-primary {
+            @apply bg-gradient-to-r from-yellow-400 to-orange-500 text-white font-semibold py-2 px-4 rounded-lg hover:from-yellow-500 hover:to-orange-600 transform hover:scale-105 transition duration-300;
+        }
+        .input-group input, .form-select {
+            @apply rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 focus:ring-2 focus:ring-yellow-400 transition duration-200;
+        }
+        .badge {
+            @apply bg-yellow-500 text-white text-xs font-semibold px-2 py-1 rounded-full;
+        }
+        .ripple {
+            position: relative;
+            overflow: hidden;
+        }
+        .ripple::after {
+            content: '';
+            position: absolute;
+            background: rgba(255, 255, 255, 0.3);
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            transform: scale(0);
+            animation: ripple 0.6s linear;
+            top: 50%;
+            left: 50%;
+            transform-origin: center;
+        }
+        @keyframes ripple {
+            to { transform: scale(4); opacity: 0; }
+        }
+        .starburst {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 120px;
+            height: 120px;
+            background: radial-gradient(circle, rgba(249, 115, 22, 1) 10%, transparent 70%);
+            border-radius: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            animation: starburst 0.8s ease-out forwards;
+            pointer-events: none;
+            z-index: 10;
+        }
+        @keyframes starburst {
+            0% { transform: translate(-50%, -50%) scale(0); opacity: 1; }
+            100% { transform: translate(-50%, -50%) scale(2); opacity: 0; }
+        }
+        @keyframes pop {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.15); }
+            100% { transform: scale(1); }
+        }
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 48px;
+            height: 24px;
+        }
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .slider {
+            @apply absolute cursor-pointer top-0 left-0 right-0 bottom-0 bg-gray-300 rounded-full transition duration-300;
+        }
+        .slider:before {
+            @apply absolute content-[''] h-5 w-5 left-0.5 bottom-0.5 bg-white rounded-full transition duration-300;
+        }
+        input:checked + .slider {
+            @apply bg-yellow-500;
+        }
+        input:checked + .slider:before {
+            @apply transform translate-x-6;
+        }
+        #lightIcon, #darkIcon {
+            @apply absolute top-1/2 transform -translate-y-1/2 text-sm;
+        }
+        #lightIcon {
+            @apply left-2 text-yellow-400;
+        }
+        #darkIcon {
+            @apply right-2 text-gray-800;
+        }
+        input:checked + .slider #lightIcon {
+            @apply hidden;
+        }
+        input:not(:checked) + .slider #darkIcon {
+            @apply hidden;
+        }
+        canvas.sparkle {
+            position: absolute;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+            z-index: 5;
+        }
+        .made-with-heart {
+            font-family: 'Poppins', sans-serif;
+            color: #facc15;
+            transition: color 0.3s ease;
+            cursor: pointer;
+        }
+        .dark-mode .made-with-heart {
+            color: #f97316;
+        }
+        .made-with-heart:hover {
+            color: #f97316;
+        }
+    </style>
+    <script>
+        const BASE_API_URL = 'http://localhost:5000';
+
+        // Sound for hover (base64-encoded click sound)
+        const hoverSound = new Audio('data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA');
+        hoverSound.volume = 0.3;
+
+        // Check login status
+        function checkLoginStatus() {
+            const isLoggedIn = localStorage.getItem('pdflogin') === 'success';
+            const loginExpiration = localStorage.getItem('pdflogin_expiration');
+            const now = new Date().getTime();
+            
+            if (isLoggedIn && loginExpiration && now >= parseInt(loginExpiration)) {
+                localStorage.removeItem('pdflogin');
+                localStorage.removeItem('pdflogin_expiration');
+                return false;
+            }
+            
+            return isLoggedIn && loginExpiration && now < parseInt(loginExpiration);
+        }
+        
+        if (!checkLoginStatus()) {
+            window.location.href = './protected.html';
+        }
+
+        // Sparkle effect on hover
+        function createSparkles(card) {
+            const canvas = document.createElement('canvas');
+            canvas.className = 'sparkle';
+            card.appendChild(canvas);
+            const ctx = canvas.getContext('2d');
+            const rect = card.getBoundingClientRect();
+            canvas.width = rect.width;
+            canvas.height = rect.height;
+
+            const particles = [];
+            const colors = ['#facc15', '#bfdbfe', '#f97316'];
+            for (let i = 0; i < 25; i++) {
+                particles.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    size: Math.random() * 4 + 1,
+                    speedX: Math.random() * 2 - 1,
+                    speedY: Math.random() * 2 - 1,
+                    color: colors[Math.floor(Math.random() * colors.length)],
+                    life: 40
+                });
+            }
+
+            function animate() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                particles.forEach(p => {
+                    if (p.life > 0) {
+                        ctx.beginPath();
+                        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                        ctx.fillStyle = p.color;
+                        ctx.fill();
+                        p.x += p.speedX;
+                        p.y += p.speedY;
+                        p.life--;
+                    }
+                });
+                if (particles.some(p => p.life > 0)) {
+                    requestAnimationFrame(animate);
+                } else {
+                    canvas.remove();
+                }
+            }
+            animate();
+        }
+
+        // Confetti effect on click
+        function createConfetti(x, y) {
+            const canvas = document.createElement('canvas');
+            canvas.id = 'confetti';
+            document.body.appendChild(canvas);
+            const ctx = canvas.getContext('2d');
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+
+            const particles = [];
+            const colors = ['#facc15', '#f97316', '#bfdbfe', '#eab308'];
+            for (let i = 0; i < 60; i++) {
+                particles.push({
+                    x: x,
+                    y: y,
+                    size: Math.random() * 6 + 2,
+                    speedX: Math.random() * 8 - 4,
+                    speedY: Math.random() * -8 - 3,
+                    color: colors[Math.floor(Math.random() * colors.length)],
+                    life: 80
+                });
+            }
+
+            function animate() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                particles.forEach(p => {
+                    if (p.life > 0) {
+                        ctx.beginPath();
+                        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                        ctx.fillStyle = p.color;
+                        ctx.fill();
+                        p.x += p.speedX;
+                        p.y += p.speedY;
+                        p.speedY += 0.15;
+                        p.life--;
+                    }
+                });
+                if (particles.some(p => p.life > 0)) {
+                    requestAnimationFrame(animate);
+                } else {
+                    canvas.remove();
+                }
+            }
+            animate();
+        }
+
+        // Fetch books from backend
+        async function fetchBooks() {
+            try {
+                const response = await fetch(`${BASE_API_URL}/api/books`);
+                const books = await response.json();
+                const pdfGrid = document.getElementById('pdfGrid');
+                pdfGrid.innerHTML = '';
+                books.forEach(book => {
+                    const card = document.createElement('div');
+                    card.className = 'pdf-card';
+                    card.dataset.title = book.title;
+                    card.dataset.class = book.class;
+                    card.dataset.exam = book.exam;
+                    card.innerHTML = `
+                        <div class="card">
+                            <div class="relative">
+                                <img src="${book.image_url}" class="card-img-top" alt="${book.title}" loading="lazy">
+                                <span class="badge absolute top-2 right-2">${book.exam}</span>
+                            </div>
+                            <div class="p-4">
+                                <h5 class="text-lg font-semibold">${book.title}</h5>
+                                <div class="flex space-x-4 text-sm text-gray-600 dark:text-gray-300">
+                                    <span><i class="bi bi-mortarboard-fill mr-1"></i>${book.class}</span>
+                                    <span><i class="bi bi-journal-check mr-1"></i>${book.exam}</span>
+                                </div>
+                            </div>
+                            <div class="p-4">
+                                <a href="${book.pdf_url}" target="_blank" class="btn-primary w-full flex justify-center items-center ripple">
+                                    <i class="bi bi-download mr-2"></i> Download PDF
+                                </a>
+                            </div>
+                        </div>
+                    `;
+                    pdfGrid.appendChild(card);
+                });
+                // Re-attach event listeners
+                document.querySelectorAll('.pdf-card').forEach(card => {
+                    card.addEventListener('mouseenter', function() {
+                        createSparkles(this);
+                        hoverSound.play();
+                    });
+                    card.addEventListener('touchstart', function() {
+                        createSparkles(this);
+                        hoverSound.play();
+                    });
+                    card.addEventListener('click', function(e) {
+                        const rect = this.getBoundingClientRect();
+                        const x = e.clientX - rect.left;
+                        const y = e.clientY - rect.top;
+                        this.classList.add('clicked');
+                        const starburst = document.createElement('div');
+                        starburst.classList.add('starburst');
+                        this.appendChild(starburst);
+                        createConfetti(e.clientX, e.clientY);
+                        setTimeout(() => {
+                            starburst.remove();
+                            this.classList.remove('clicked');
+                        }, 800);
+                    });
+                });
+            } catch (error) {
+                console.error('Error fetching books:', error);
+                Swal.fire('Oops!', 'Backend se books nahi aaye, bhai!', 'error');
+            }
+        }
+
+        // Main logic
+        document.addEventListener('DOMContentLoaded', function() {
+            fetchBooks();
+
+            // Dark mode
+            const darkModeEnabled = localStorage.getItem('darkMode') === 'enabled';
+            if (darkModeEnabled) {
+                document.body.classList.add('dark-mode');
+                document.getElementById('darkModeToggle').checked = true;
+            }
+            
+            document.getElementById('darkModeToggle').addEventListener('change', function() {
+                if (this.checked) {
+                    document.body.classList.add('dark-mode');
+                    localStorage.setItem('darkMode', 'enabled');
+                } else {
+                    document.body.classList.remove('dark-mode');
+                    localStorage.setItem('darkMode', 'disabled');
+                }
+            });
+
+            // Search and filter
+            const searchInput = document.getElementById('searchInput');
+            const classFilter = document.getElementById('classFilter');
+            const examFilter = document.getElementById('examFilter');
+
+            function filterPDFs() {
+                const searchTerm = searchInput.value.toLowerCase();
+                const selectedClass = classFilter.value;
+                const selectedExam = examFilter.value;
+                const pdfCards = document.querySelectorAll('.pdf-card');
+
+                pdfCards.forEach(card => {
+                    const title = card.dataset.title.toLowerCase();
+                    const cardClass = card.dataset.class;
+                    const cardExam = card.dataset.exam;
+
+                    const matchesSearch = title.includes(searchTerm);
+                    const matchesClass = selectedClass === 'all' || cardClass === selectedClass;
+                    const matchesExam = selectedExam === 'all' || cardExam === selectedExam;
+
+                    if (matchesSearch && matchesClass && matchesExam) {
+                        card.style.display = 'block';
+                        card.classList.add('fade-in');
+                    } else {
+                        card.style.display = 'none';
+                    }
+                });
+            }
+
+            searchInput.addEventListener('input', filterPDFs);
+            classFilter.addEventListener('change', filterPDFs);
+            examFilter.addEventListener('change', filterPDFs);
+
+            // Footer triple-click for admin login
+            let clickCount = 0;
+            let clickTimer = null;
+            document.querySelector('.made-with-heart').addEventListener('click', function () {
+                clickCount++;
+                if (clickCount === 1) {
+                    clickTimer = setTimeout(() => {
+                        clickCount = 0;
+                    }, 500);
+                }
+                if (clickCount >= 3) {
+                    clearTimeout(clickTimer);
+                    clickCount = 0;
+                    Swal.fire({
+                        title: 'Admin Login',
+                        input: 'password',
+                        inputPlaceholder: 'Enter admin password',
+                        showCancelButton: true,
+                        confirmButtonText: 'Login',
+                        preConfirm: async (password) => {
+                            try {
+                                const response = await fetch(`${BASE_API_URL}/api/admin-login`, {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({ password })
+                                });
+                                const result = await response.json();
+                                if (!result.success) {
+                                    throw new Error('Invalid password');
+                                }
+                                return result;
+                            } catch (error) {
+                                Swal.showValidationMessage(`Login failed: ${error.message}`);
+                            }
+                        }
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            localStorage.setItem('isAdmin', 'true');
+                            window.location.href = './admin.html';
+                        }
+                    });
+                }
+            });
+        });
+    </script>
+</head>
+<body class="min-h-screen">
+    <!-- Header -->
+    <header class="py-4 px-6 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto flex justify-between items-center">
+            <div class="flex items-center">
+                <svg width="160" height="60" viewBox="0 0 160 60" class="main-logo">
+                    <g class="books-logo">
+                        <path d="M36 46H16V14C16 12.9 16.9 12 18 12H34C35.1 12 36 12.9 36 13V46Z" fill="none" stroke="currentColor" stroke-width="2" />
+                        <path d="M36 46H19V18C19 16.9 19.9 16 21 16H34C35.1 16 36 16.9 36 18V46Z" fill="none" stroke="currentColor" stroke-width="2" />
+                        <path d="M19 46H40V22C40 20.9 40.9 20 42 20H54C55.1 20 56 20.9 56 22V42C56 44.2 54.2 46 52 46H19Z" fill="none" stroke="currentColor" stroke-width="2" />
+                        <line x1="24" y1="20" x2="31" y2="20" stroke="currentColor" stroke-width="2" />
+                        <line x1="24" y1="24" x2="31" y2="24" stroke="currentColor" stroke-width="2" />
+                        <line x1="24" y1="28" x2="31" y2="28" stroke="currentColor" stroke-width="2" />
+                        <line x1="44" y1="26" x2="51" y2="26" stroke="currentColor" stroke-width="2" />
+                        <line x1="44" y1="30" x2="51" y2="30" stroke="currentColor" stroke-width="2" />
+                        <line x1="44" y1="34" x2="51" y2="34" stroke="currentColor" stroke-width="2" />
+                        <line x1="15" y1="46" x2="60" y2="46" stroke="currentColor" stroke-width="2" />
+                    </g>
+                    <text x="70" y="30" font-family="Poppins, sans-serif" font-size="16" font-weight="600" fill="currentColor">GEN-Z</text>
+                    <text x="70" y="42" font-family="Inter, sans-serif" font-size="11" fill="currentColor">PDF Library</text>
+                </svg>
+            </div>
+            <div class="flex items-center space-x-4">
+                <a href="https://t.me/genzcoders1" class="btn-primary flex items-center space-x-2 ripple" target="_blank">
+                    <i class="bi bi-chat-dots-fill"></i>
+                    <span>Join Gen-Z Channel</span>
+                </a>
+                <label class="switch">
+                    <input type="checkbox" id="darkModeToggle">
+                    <span class="slider">
+                        <i id="lightIcon" class="bi bi-brightness-high"></i>
+                        <i id="darkIcon" class="bi bi-moon-stars-fill"></i>
+                    </span>
+                </label>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto py-8 px-4">
+        <!-- Search & Filter -->
+        <section class="mb-8">
+            <div class="card p-6">
+                <h2 class="text-2xl font-semibold mb-4 flex items-center">
+                    <i class="bi bi-funnel mr-2"></i> Find Your Resources
+                </h2>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="input-group relative">
+                        <span class="absolute inset-y-0 left-0 flex items-center pl-3">
+                            <i class="bi bi-search text-gray-500"></i>
+                        </span>
+                        <input type="text" id="searchInput" class="w-full pl-10 py-2" placeholder="Search PDFs...">
+                    </div>
+                    <select id="classFilter" class="form-select">
+                        <option value="all">All Classes</option>
+                        <option value="9th">9th</option>
+                        <option value="10th">10th</option>
+                        <option value="11th">11th</option>
+                        <option value="12th">12th</option>
+                    </select>
+                    <select id="examFilter" class="form-select">
+                        <option value="all">All Exams</option>
+                        <option value="Board">Board</option>
+                        <option value="JEE">JEE</option>
+                        <option value="NEET">NEET</option>
+                        <option value="OTHER">OTHER</option>
+                    </select>
+                </div>
+            </div>
+        </section>
+
+        <!-- PDF Grid -->
+        <section>
+            <h2 class="text-3xl font-bold mb-6 flex items-center">
+                <i class="bi bi-file-earmark-pdf mr-2"></i> Available Resources
+            </h2>
+            <div id="pdfGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                div id="pdfGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                <div class="pdf-card" data-title="Concept of Physics - Part 1 & 2 By H.C. Verma (Set of 2 books)2025-26" data-class="all" data-exam="all">
+                    <div class="card">
+                        <div class="relative">
+                            <img src="https://booksfy.in/cdn/shop/files/81XNZcwmvQL._SY466_720x.jpg?v=1744208066" class="card-img-top" alt="Concept of Physics" loading="lazy">
+                            <span class="badge absolute top-2 right-2">all</span>
+                        </div>
+                        <div class="p-4">
+                            <h5 class="text-lg font-semibold">Concept of Physics - Part 1 & 2 By H.C. Verma</h5>
+                            <div class="flex space-x-4 text-sm text-gray-600 dark:text-gray-300">
+                                <span><i class="bi bi-mortarboard-fill mr-1"></i>all</span>
+                                <span><i class="bi bi-journal-check mr-1"></i>all</span>
+                            </div>
+                        </div>
+                        <div class="p-4">
+                            <a href="https://drive.google.com/drive/folders/19Qqr5Q-QIpOgiJlAzvfL3dpJ7gy2SWZc" target="_blank" class="btn-primary w-full flex justify-center items-center ripple">
+                                <i class="bi bi-download mr-2"></i> Download PDF
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="pdf-card" data-title="R.D. Sharma Mathematics For Class 12 with MCQs in Mathematics CBSE Exam" data-class="12th" data-exam="all">
+                    <div class="card">
+                        <div class="relative">
+                            <img src="https://m.media-amazon.com/images/I/71S2iO-j4WL._SL1360_.jpg" class="card-img-top" alt="R.D. Sharma Mathematics" loading="lazy">
+                            <span class="badge absolute top-2 right-2">all</span>
+                        </div>
+                        <div class="p-4">
+                            <h5 class="text-lg font-semibold">R.D. Sharma Mathematics For Class 12</h5>
+                            <div class="flex space-x-4 text-sm text-gray-600 dark:text-gray-300">
+                                <span><i class="bi bi-mortarboard-fill mr-1"></i>12th</span>
+                                <span><i class="bi bi-journal-check mr-1"></i>all</span>
+                            </div>
+                        </div>
+                        <div class="p-4">
+                            <a href="https://drive.google.com/drive/folders/1b2c3d4e5f6g7h8i9j0k" target="_blank" class="btn-primary w-full flex justify-center items-center ripple">
+                                <i class="bi bi-download mr-2"></i> Download PDF
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="pdf-card" data-title="Lakshya For JEE Main & Advanced Class 12 Mathematics Modules with Solutions" data-class="12th" data-exam="JEE">
+                    <div class="card">
+                        <div class="relative">
+                            <img src="https://d2bps9p1kiy4ka.cloudfront.net/5eb393ee95fab7468a79d189/94e47ae5-37e2-4e11-989a-d8dea1bf8881.png" class="card-img-top" alt="Lakshya JEE Mathematics" loading="lazy">
+                            <span class="badge absolute top-2 right-2">JEE</span>
+                        </div>
+                        <div class="p-4">
+                            <h5 class="text-lg font-semibold">Lakshya For JEE Main & Advanced Class 12 Mathematics</h5>
+                            <div class="flex space-x-4 text-sm text-gray-600 dark:text-gray-300">
+                                <span><i class="bi bi-mortarboard-fill mr-1"></i>12th</span>
+                                <span><i class="bi bi-journal-check mr-1"></i>JEE</span>
+                            </div>
+                        </div>
+                        <div class="p-4">
+                            <a href="https://drive.google.com/drive/folders/1g0HbYev2fHuHed56xFWuxn6nri-jQcH-" target="_blank" class="btn-primary w-full flex justify-center items-center ripple">
+                                <i class="bi bi-download mr-2"></i> Download PDF
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="pdf-card" data-title="Lakshya For JEE Main & Advanced Class 12 Physics Modules with Solutions" data-class="12th" data-exam="JEE">
+                    <div class="card">
+                        <div class="relative">
+                            <img src="https://d2bps9p1kiy4ka.cloudfront.net/5eb393ee95fab7468a79d189/94e47ae5-37e2-4e11-989a-d8dea1bf8881.png" class="card-img-top" alt="Lakshya JEE Physics" loading="lazy">
+                            <span class="badge absolute top-2 right-2">JEE</span>
+                        </div>
+                        <div class="p-4">
+                            <h5 class="text-lg font-semibold">Lakshya For JEE Main & Advanced Class 12 Physics</h5>
+                            <div class="flex space-x-4 text-sm text-gray-600 dark:text-gray-300">
+                                <span><i class="bi bi-mortarboard-fill mr-1"></i>12th</span>
+                                <span><i class="bi bi-journal-check mr-1"></i>JEE</span>
+                            </div>
+                        </div>
+                        <div class="p-4">
+                            <a href="https://drive.google.com/drive/folders/1tHywg5e8KU-gqaRqtfWC5041kso1PPE5" target="_blank" class="btn-primary w-full flex justify-center items-center ripple">
+                                <i class="bi bi-download mr-2"></i> Download PDF
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="pdf-card" data-title="Arjuna for NEET Class 11th Zoology Modules with Solutions" data-class="11th" data-exam="NEET">
+                    <div class="card">
+                        <div class="relative">
+                            <img src="https://d2bps9p1kiy4ka.cloudfront.net/5eb393ee95fab7468a79d189/a946956d-c803-48e4-8932-40dd1d30ee3e.png" class="card-img-top" alt="Arjuna NEET Zoology" loading="lazy">
+                            <span class="badge absolute top-2 right-2">NEET</span>
+                        </div>
+                        <div class="p-4">
+                            <h5 class="text-lg font-semibold">Arjuna for NEET Class 11th Zoology</h5>
+                            <div class="flex space-x-4 text-sm text-gray-600 dark:text-gray-300">
+                                <span><i class="bi bi-mortarboard-fill mr-1"></i>11th</span>
+                                <span><i class="bi bi-journal-check mr-1"></i>NEET</span>
+                            </div>
+                        </div>
+                        <div class="p-4">
+                            <a href="https://drive.google.com/drive/folders/1fXe8T1Tvhef9EHzGu75qc4Ezjw4REKef" target="_blank" class="btn-primary w-full flex justify-center items-center ripple">
+                                <i class="bi bi-download mr-2"></i> Download PDF
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="pdf-card" data-title="Arjuna for NEET Class 11th Botany Modules with Solutions" data-class="11th" data-exam="NEET">
+                    <div class="card">
+                        <div class="relative">
+                            <img src="https://d2bps9p1kiy4ka.cloudfront.net/5eb393ee95fab7468a79d189/a946956d-c803-48e4-8932-40dd1d30ee3e.png" class="card-img-top" alt="Arjuna NEET Botany" loading="lazy">
+                            <span class="badge absolute top-2 right-2">NEET</span>
+                        </div>
+                        <div class="p-4">
+                            <h5 class="text-lg font-semibold">Arjuna for NEET Class 11th Botany</h5>
+                            <div class="flex space-x-4 text-sm text-gray-600 dark:text-gray-300">
+                                <span><i class="bi bi-mortarboard-fill mr-1"></i>11th</span>
+                                <span><i class="bi bi-journal-check mr-1"></i>NEET</span>
+                            </div>
+                        </div>
+                        <div class="p-4">
+                            <a href="https://drive.google.com/drive/folders/1N18tjDboqiWy__W3yha1wPCw1VgtTTyO" target="_blank" class="btn-primary w-full flex justify-center items-center ripple">
+                                <i class="bi bi-download mr-2"></i> Download PDF
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="pdf-card" data-title="Arjuna for NEET Class 11th Chemistry Modules with Solutions" data-class="11th" data-exam="NEET">
+                    <div class="card">
+                        <div class="relative">
+                            <img src="https://d2bps9p1kiy4ka.cloudfront.net/5eb393ee95fab7468a79d189/a946956d-c803-48e4-8932-40dd1d30ee3e.png" class="card-img-top" alt="Arjuna NEET Chemistry" loading="lazy">
+                            <span class="badge absolute top-2 right-2">NEET</span>
+                        </div>
+                        <div class="p-4">
+                            <h5 class="text-lg font-semibold">Arjuna for NEET Class 11th Chemistry</h5>
+                            <div class="flex space-x-4 text-sm text-gray-600 dark:text-gray-300">
+                                <span><i class="bi bi-mortarboard-fill mr-1"></i>11th</span>
+                                <span><i class="bi bi-journal-check mr-1"></i>NEET</span>
+                            </div>
+                        </div>
+                        <div class="p-4">
+                            <a href="https://drive.google.com/drive/folders/1oAsZuEO5khBNvs-gAaPTyh1IPWbyLxxx" target="_blank" class="btn-primary w-full flex justify-center items-center ripple">
+                                <i class="bi bi-download mr-2"></i> Download PDF
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="pdf-card" data-title="Arjuna for NEET Class 11th Physics Modules with Solutions" data-class="11th" data-exam="NEET">
+                    <div class="card">
+                        <div class="relative">
+                            <img src="https://d2bps9p1kiy4ka.cloudfront.net/5eb393ee95fab7468a79d189/a946956d-c803-48e4-8932-40dd1d30ee3e.png" class="card-img-top" alt="Arjuna NEET Physics" loading="lazy">
+                            <span class="badge absolute top-2 right-2">NEET</span>
+                        </div>
+                        <div class="p-4">
+                            <h5 class="text-lg font-semibold">Arjuna for NEET Class 11th Physics</h5>
+                            <div class="flex space-x-4 text-sm text-gray-600 dark:text-gray-300">
+                                <span><i class="bi bi-mortarboard-fill mr-1"></i>11th</span>
+                                <span><i class="bi bi-journal-check mr-1"></i>NEET</span>
+                            </div>
+                        </div>
+                        <div class="p-4">
+                            <a href="https://drive.google.com/drive/folders/1Y9xMj21xEf3lIXiWPn8l1Om5TdP9NmEU?usp=sharing" target="_blank" class="btn-primary w-full flex justify-center items-center ripple">
+                                <i class="bi bi-download mr-2"></i> Download PDF
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="pdf-card" data-title="PW Arjuna For JEE Main & Advanced Class 11 Chemistry Modules with Solutions Combo" data-class="11th" data-exam="JEE">
+                    <div class="card">
+                        <div class="relative">
+                            <img src="https://d2bps9p1kiy4ka.cloudfront.net/5eb393ee95fab7468a79d189/42178cbc-1934-4b5e-a839-cd7011a3e2df.png" class="card-img-top" alt="Arjuna JEE Chemistry" loading="lazy">
+                            <span class="badge absolute top-2 right-2">JEE</span>
+                        </div>
+                        <div class="p-4">
+                            <h5 class="text-lg font-semibold">PW Arjuna For JEE Main & Advanced Class 11 Chemistry</h5>
+                            <div class="flex space-x-4 text-sm text-gray-600 dark:text-gray-300">
+                                <span><i class="bi bi-mortarboard-fill mr-1"></i>11th</span>
+                                <span><i class="bi bi-journal-check mr-1"></i>JEE</span>
+                            </div>
+                        </div>
+                        <div class="p-4">
+                            <a href="https://drive.google.com/drive/folders/1cYHE8zZSiXE8oSX1cbcUCZBYFdyIn-ux?usp=sharing" target="_blank" class="btn-primary w-full flex justify-center items-center ripple">
+                                <i class="bi bi-download mr-2"></i> Download PDF
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="pdf-card" data-title="PW Arjuna For JEE Main & Advanced Class 11 Physics Modules with Solutions Combo" data-class="11th" data-exam="JEE">
+                    <div class="card">
+                        <div class="relative">
+                            <img src="https://d2bps9p1kiy4ka.cloudfront.net/5eb393ee95fab7468a79d189/8831b5ff-8489-4701-a3a1-6da10eba9c92.png" class="card-img-top" alt="Arjuna JEE Physics" loading="lazy">
+                            <span class="badge absolute top-2 right-2">JEE</span>
+                        </div>
+                        <div class="p-4">
+                            <h5 class="text-lg font-semibold">PW Arjuna For JEE Main & Advanced Class 11 Physics</h5>
+                            <div class="flex space-x-4 text-sm text-gray-600 dark:text-gray-300">
+                                <span><i class="bi bi-mortarboard-fill mr-1"></i>11th</span>
+                                <span><i class="bi bi-journal-check mr-1"></i>JEE</span>
+                            </div>
+                        </div>
+                        <div class="p-4">
+                            <a href="https://drive.google.com/drive/folders/1wNVqa4LEWu8_whknsX6-mEsXxPjiE40N?usp=sharing" target="_blank" class="btn-primary w-full flex justify-center items-center ripple">
+                                <i class="bi bi-download mr-2"></i> Download PDF
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="pdf-card" data-title="PW Arjuna For JEE Main & Advanced Class 11 Mathematics Modules with Solutions Combo" data-class="11th" data-exam="JEE">
+                    <div class="card">
+                        <div class="relative">
+                            <img src="https://d2bps9p1kiy4ka.cloudfront.net/5eb393ee95fab7468a79d189/8691f6ca-2ea2-4cbf-8b2e-9c82fc53bf4a.png" class="card-img-top" alt="Arjuna JEE Mathematics" loading="lazy">
+                            <span class="badge absolute top-2 right-2">JEE</span>
+                        </div>
+                        <div class="p-4">
+                            <h5 class="text-lg font-semibold">PW Arjuna For JEE Main & Advanced Class 11 Mathematics</h5>
+                            <div class="flex space-x-4 text-sm text-gray-600 dark:text-gray-300">
+                                <span><i class="bi bi-mortarboard-fill mr-1"></i>11th</span>
+                                <span><i class="bi bi-journal-check mr-1"></i>JEE</span>
+                            </div>
+                        </div>
+                        <div class="p-4">
+                            <a href="https://drive.google.com/drive/folders/16mNjp9kALYgtj85k2sehRTjB8TTr1AQn?usp=sharing" target="_blank" class="btn-primary w-full flex justify-center items-center ripple">
+                                <i class="bi bi-download mr-2"></i> Download PDF
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="pdf-card" data-title="Arihant iSucceed Hindi-B — Sample Papers Latest (2024-25) edition" data-class="10th" data-exam="Board">
+                    <div class="card">
+                        <div class="relative">
+                            <img src="https://m.media-amazon.com/images/I/71G1tHgBECL._SY385_.jpg" class="card-img-top" alt="Arihant Hindi-B" loading="lazy">
+                            <span class="badge absolute top-2 right-2">Board</span>
+                        </div>
+                        <div class="p-4">
+                            <h5 class="text-lg font-semibold">Arihant iSucceed Hindi-B Sample Papers</h5>
+                            <div class="flex space-x-4 text-sm text-gray-600 dark:text-gray-300">
+                                <span><i class="bi bi-mortarboard-fill mr-1"></i>10th</span>
+                                <span><i class="bi bi-journal-check mr-1"></i>Board</span>
+                            </div>
+                        </div>
+                        <div class="p-4">
+                            <a href="https://drive.google.com/file/d/1JT73_l4wsRjJ82mOsTlcl1ZJwKNJBX-a/view?usp=drive_link" target="_blank" class="btn-primary w-full flex justify-center items-center ripple">
+                                <i class="bi bi-download mr-2"></i> Download PDF
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="pdf-card" data-title="Kriti Sharma 1'o Clack REVISION BOOK - MATHS" data-class="10th" data-exam="Board">
+                    <div class="card">
+                        <div class="relative">
+                            <img src="https://m.media-amazon.com/images/I/51HdQ-2w9GL._SX342_SY445_.jpg" class="card-img-top" alt="Kriti Sharma Maths" loading="lazy">
+                            <span class="badge absolute top-2 right-2">Board</span>
+                        </div>
+                        <div class="p-4">
+                            <h5 class="text-lg font-semibold">Kriti Sharma 1'o Clack Revision Book - Maths</h5>
+                            <div class="flex space-x-4 text-sm text-gray-600 dark:text-gray-300">
+                                <span><i class="bi bi-mortarboard-fill mr-1"></i>10th</span>
+                                <span><i class="bi bi-journal-check mr-1"></i>Board</span>
+                            </div>
+                        </div>
+                        <div class="p-4">
+                            <a href="https://drive.google.com/file/d/1ArUJOHb-QMCfczunvxYjdGMJe0rJZzHo/view?usp=drive_link" target="_blank" class="btn-primary w-full flex justify-center items-center ripple">
+                                <i class="bi bi-download mr-2"></i> Download PDF
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="pdf-card" data-title="Kriti Sharma 1'o clock Revision Book - SST" data-class="10th" data-exam="Board">
+                    <div class="card">
+                        <div class="relative">
+                            <img src="https://imgv2-2-f.scribdassets.com/img/document/808355992/298x396/5debde49a3/1743706895" class="card-img-top" alt="Kriti Sharma SST" loading="lazy">
+                            <span class="badge absolute top-2 right-2">Board</span>
+                        </div>
+                        <div class="p-4">
+                            <h5 class="text-lg font-semibold">Kriti Sharma 1'o Clock Revision Book - SST</h5>
+                            <div class="flex space-x-4 text-sm text-gray-600 dark:text-gray-300">
+                                <span><i class="bi bi-mortarboard-fill mr-1"></i>10th</span>
+                                <span><i class="bi bi-journal-check mr-1"></i>Board</span>
+                            </div>
+                        </div>
+                        <div class="p-4">
+                            <a href="https://drive.google.com/file/d/1Mit-R7-lK-te5y54CPdvCawxM-XYxdwT/view?usp=drive_link" target="_blank" class="btn-primary w-full flex justify-center items-center ripple">
+                                <i class="bi bi-download mr-2"></i> Download PDF
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+                <!-- Books will be dynamically loaded here -->
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="py-6 bg-gray-100 dark:bg-gray-800">
+        <div class="max-w-7xl mx-auto px-4 flex flex-col md:flex-row justify-between items-center">
+            <p class="made-with-heart text-sm">© 2025-26 GenZZ Library. All rights reserved.</p>
+            <div class="flex space-x-4 mt-4 md:mt-0">
+                <a href="https://t.me/genzcoders1" target="_blank" class="text-yellow-500 hover:text-yellow-600">
+                    <i class="bi bi-telegram text-xl"></i>
+                </a>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>

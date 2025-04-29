@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GenZZ Library - Validating Access</title>
+    <link rel="icon" href="./assets/favicon.ico">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #bfdbfe, #60a5fa);
+            font-family: 'Inter', sans-serif;
+        }
+        .validation-card {
+            background: rgba(255, 255, 255, 0.98);
+            border-radius: 25px;
+            box-shadow: 0 12px 35px rgba(0, 0, 0, 0.15);
+            transition: transform 0.4s ease, box-shadow 0.4s ease;
+        }
+        .validation-card:hover {
+            transform: translateY(-12px);
+            box-shadow: 0 18px 45px rgba(0, 0, 0, 0.25);
+        }
+        .btn-access {
+            border-radius: 50px;
+            font-family: 'Poppins', sans-serif;
+            font-weight: 600;
+            padding: 0.9rem 2.8rem;
+            background: linear-gradient(90deg, #facc15, #f97316);
+            color: #1e40af;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(249, 115, 22, 0.3);
+        }
+        .btn-access:hover {
+            transform: scale(1.08);
+            box-shadow: 0 8px 20px rgba(249, 115, 22, 0.5);
+            background: linear-gradient(90deg, #eab308, #ea580c);
+        }
+        .btn-access::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: width 0.5s ease, height 0.5s ease;
+        }
+        .btn-access:hover::before {
+            width: 350px;
+            height: 350px;
+        }
+        .dark-mode {
+            background: linear-gradient(135deg, #1e3a8a, #1e40af);
+            color: #ffffff;
+        }
+        .dark-mode .validation-card {
+            background: rgba(30, 30, 30, 0.98);
+            color: #ffffff;
+        }
+        .dark-mode .header-section {
+            background: rgba(30, 30, 30, 0.95);
+        }
+        .dark-mode .footer-section {
+            background: rgba(255, 255, 255, 0.05);
+        }
+        .made-with-heart {
+            font-family: 'Poppins', sans-serif;
+            color: #1e40af;
+            transition: color 0.3s ease;
+        }
+        .dark-mode .made-with-heart {
+            color: #f97316;
+        }
+        .made-with-heart:hover {
+            color: #f97316;
+        }
+    </style>
+    <script>
+        const BASE_API_URL = 'http://localhost:5000';
+        const clickSound = new Audio('data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA');
+        clickSound.volume = 0.3;
+
+        document.addEventListener('DOMContentLoaded', async function () {
+            const darkModeEnabled = localStorage.getItem('darkMode') === 'enabled';
+            if (darkModeEnabled) {
+                document.body.classList.add('dark-mode');
+                document.getElementById('darkModeToggle').checked = true;
+            }
+            document.getElementById('darkModeToggle').addEventListener('change', function () {
+                try {
+                    if (this.checked) {
+                        document.body.classList.add('dark-mode');
+                        localStorage.setItem('darkMode', 'enabled');
+                    } else {
+                        document.body.classList.remove('dark-mode');
+                        localStorage.setItem('darkMode', 'disabled');
+                    }
+                } catch (error) {
+                    console.error('Dark mode error:', error);
+                }
+            });
+
+            try {
+                const token = localStorage.getItem('accessToken');
+                const expiry = localStorage.getItem('accessTokenExpiry');
+                const shortUrl = localStorage.getItem('shortUrl');
+
+                if (!token || !expiry || Date.now() > parseInt(expiry)) {
+                    Swal.fire({
+                        title: 'Access Denied',
+                        text: 'Your access key is invalid or has expired. Generate a new key.',
+                        icon: 'error',
+                        confirmButtonText: 'Go to Key Generator',
+                    }).then(() => {
+                        window.location.href = './index.html';
+                    });
+                    return;
+                }
+
+                const response = await fetch(`${BASE_API_URL}/api/validate-key`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ token }),
+                    credentials: 'include'
+                });
+                const result = await response.json();
+
+                if (!result.valid) {
+                    localStorage.removeItem('accessToken');
+                    localStorage.removeItem('accessTokenExpiry');
+                    localStorage.removeItem('shortUrl');
+                    Swal.fire({
+                        title: 'Access Denied',
+                        text: 'Invalid key. Generate a new one.',
+                        icon: 'error',
+                        confirmButtonText: 'Go to Key Generator',
+                    }).then(() => {
+                        window.location.href = './index.html';
+                    });
+                    return;
+                }
+
+                clickSound.play();
+                Swal.fire({
+                    title: 'Access Validated! 🎉',
+                    html: `Access granted! Library URL: <a href="${shortUrl}" target="_blank">${shortUrl}</a><br>Redirecting to library...`,
+                    icon: 'success',
+                    timer: 2000,
+                    showConfirmButton: false,
+                }).then(() => {
+                    window.location.href = './home.html';
+                });
+            } catch (error) {
+                console.error('Error validating key:', error);
+                Swal.fire({
+                    title: 'Error',
+                    text: 'Failed to validate key. Try again.',
+                    icon: 'error',
+                    confirmButtonText: 'Go to Key Generator',
+                }).then(() => {
+                    window.location.href = './index.html';
+                });
+            }
+        });
+    </script>
+</head>
+<body class="text-gray-800 min-h-screen flex flex-col">
+    <!-- Header -->
+    <header class="header-section py-4">
+        <div class="container mx-auto px-4">
+            <nav class="flex justify-between items-center">
+                <div class="logo-container">
+                    <svg width="160" height="60" viewBox="0 0 160 60" xmlns="http://www.w3.org/2000/svg" class="main-logo">
+                        <g class="books-logo">
+                            <path d="M36 46H16V14C16 12.9 16.9 12 18 12H34C35.1 12 36 12.9 36 13V46Z" fill="none" stroke="currentColor" stroke-width="2" />
+                            <path d="M36 46H19V18C19 16.9 19.9 16 21 16H34C35.1 16 36 16.9 36 18V46Z" fill="none" stroke="currentColor" stroke-width="2" />
+                            <path d="M19 46H40V22C40 20.9 40.9 20 42 20H54C55.1 20 56 20.9 56 22V42C56 44.2 54.2 46 52 46H19Z" fill="none" stroke="currentColor" stroke-width="2" />
+                            <line x1="24" y1="20" x2="31" y2="20" stroke="currentColor" stroke-width="2" />
+                            <line x1="24" y1="24" x2="31" y2="24" stroke="currentColor" stroke-width="2" />
+                            <line x1="24" y1="28" x2="31" y2="28" stroke="currentColor" stroke-width="2" />
+                            <line x1="44" y1="26" x2="51" y2="26" stroke="currentColor" stroke-width="2" />
+                            <line x1="44" y1="30" x2="51" y2="30" stroke="currentColor" stroke-width="2" />
+                            <line x1="44" y1="34" x2="51" y2="34" stroke="currentColor" stroke-width="2" />
+                            <line x1="15" y1="46" x2="60" y2="46" stroke="currentColor" stroke-width="2" />
+                        </g>
+                        <text x="70" y="30" font-family="Poppins, sans-serif" font-size="16" font-weight="600" fill="currentColor">GEN-Z</text>
+                        <text x="70" y="42" font-family="Inter, sans-serif" font-size="11" fill="currentColor">PDF Library</text>
+                    </svg>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <a href="https://t.me/genzcoders1" class="btn-access text-sm py-2 px-4" target="_blank" rel="noopener noreferrer">
+                        <i class="bi bi-chat-dots-fill mr-1"></i> Join Gen-Z Channel 🚀
+                    </a>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" id="darkModeToggle" class="sr-only peer">
+                        <div class="w-11 h-6 bg-gray-200 rounded-full peer peer-checked:bg-blue-600 transition-colors">
+                            <span class="absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-transform peer-checked:translate-x-5 flex items-center justify-center text-xs">
+                                <i id="lightIcon" class="bi bi-brightness-high peer-checked:hidden"></i>
+                                <i id="darkIcon" class="bi bi-moon-stars-fill hidden peer-checked:block"></i>
+                            </span>
+                        </div>
+                    </label>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-grow flex items-center justify-center py-5">
+        <div class="validation-card p-6 mx-4 w-full max-w-md">
+            <h2 class="text-2xl font-semibold text-center mb-4 font-poppins">Validating Your Access 🔑</h2>
+            <p class="text-center text-gray-600 mb-4">Please wait while we verify your key...</p>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer-section py-4">
+        <div class="container mx-auto px-4">
+            <p class="made-with-heart text-center mb-0">Made with ❤️ by GenZ-Coders</p>
+        </div>
+    </footer>
+</body>
+</html>
