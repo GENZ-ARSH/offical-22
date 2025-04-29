@@ -61,14 +61,15 @@ async function generateShortUrl(duration) {
     console.error('Error: LINK_PAYS_API_KEY is not set.');
     return process.env.NETLIFY_URL 
       ? `${process.env.NETLIFY_URL}/home.html`
-      : 'http://localhost:5000/home.html';
+      : 'https://example.com/home.html';
   }
   try {
     const baseUrl = process.env.NETLIFY_URL 
       ? `${process.env.NETLIFY_URL}/home.html`
-      : 'http://localhost:5000/home.html';
+      : 'https://example.com/home.html';
     console.log('Generating short URL for:', baseUrl);
-    const apiUrl = `https://linkpays.in/api?api=${LINK_PAYS_API_KEY}&url=${encodeURIComponent(baseUrl)}`;
+    const encodedUrl = encodeURIComponent(baseUrl);
+    const apiUrl = `https://linkpays.in/api?api=${LINK_PAYS_API_KEY}&url=${encodedUrl}`;
     console.log('Calling LinkPays API:', apiUrl);
     const response = await fetch(apiUrl, {
       method: 'GET',
@@ -82,13 +83,13 @@ async function generateShortUrl(duration) {
       console.error('LinkPays API error:', data.message || data);
       return process.env.NETLIFY_URL 
         ? `${process.env.NETLIFY_URL}/home.html`
-        : 'http://localhost:5000/home.html';
+        : 'https://example.com/home.html';
     }
   } catch (error) {
     console.error('Error generating short URL:', error);
     return process.env.NETLIFY_URL 
       ? `${process.env.NETLIFY_URL}/home.html`
-      : 'http://localhost:5000/home.html';
+      : 'https://example.com/home.html';
   }
 }
 
@@ -231,4 +232,4 @@ module.exports.handler = serverless(app);
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
-})
+});
