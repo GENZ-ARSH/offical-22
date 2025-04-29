@@ -1,0 +1,21 @@
+{
+  "name": "genzz-library",
+  "version": "1.0.0",
+  "main": "backend/server.js",
+  "scripts": {
+    "start": "node backend/server.js",
+    "dev": "nodemon backend/server.js"
+  },
+  "dependencies": {
+    "express": "^4.17.1",
+    "cors": "^2.8.5",
+    "jsonwebtoken": "^9.0.0",
+    "cookie-parser": "^1.4.5",
+    "uuid": "^9.0.0",
+    "dotenv": "^16.0.0",
+    "node-fetch": "^2.6.7"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.0"
+  }
+}
