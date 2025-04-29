@@ -1,22 +1,16 @@
 const express = require('express');
 const cors = require('cors');
+const axios = require('axios');
 require('dotenv').config();
 
 const app = express();
 
-// CORS for local and deployed frontend
-const allowedOrigins = [
-    'http://localhost:4000',
-    'https://genzz-library.netlify.app' // Update to your Netlify URL
-];
+// Store tokens server-side
+const validTokens = new Map();
+
+// CORS for local; update to Netlify URL after deployment
 app.use(cors({
-    origin: function (origin, callback) {
-        if (!origin || allowedOrigins.includes(origin)) {
-            callback(null, true);
-        } else {
-            callback(new Error('Not allowed by CORS'));
-        }
-    },
+    origin: 'http://localhost:4000',
     methods: ['GET', 'POST', 'OPTIONS'],
     allowedHeaders: ['Content-Type'],
     credentials: true
@@ -25,7 +19,7 @@ app.options('*', cors());
 
 app.use(express.json());
 
-// In-memory book storage
+// In-memory book storage (from your home.html)
 let books = [
     {
         id: 1,
@@ -186,6 +180,59 @@ app.post('/api/books', (req, res) => {
     } catch (error) {
         console.error('Book add error:', error);
         res.status(500).json({ error: 'Failed to add book' });
+    }
+});
+
+// Generate key with Cuttly shortened URL
+app.post('/api/generate-key', async (req, res) => {
+    try {
+        const { duration, userId, url } = req.body;
+        if (!duration || !['24hr', '48hr'].includes(duration) || !url) {
+            return res.status(400).json({ error: 'Invalid duration or URL' });
+        }
+        const expiryHours = duration === '24hr' ? 24 : 48;
+        const expiry = Date.now() + expiryHours * 60 * 60 * 1000;
+        const token = `GENZ-${Math.random().toString(36).substr(2, 8)}`;
+
+        // Shorten with Cuttly
+        const cuttlyResponse = await axios.get('https://cutt.ly/api/api.php', {
+            params: {
+                key: process.env.CUTTLY_API_KEY,
+                short: url,
+                date_expire: new Date(expiry).toISOString().split('T')[0]
+            }
+        });
+        if (!cuttlyResponse.data.url || !cuttlyResponse.data.url.shortLink) {
+            throw new Error('Cuttly API failed to shorten URL');
+        }
+        const shortUrl = cuttlyResponse.data.url.shortLink;
+
+        // Store token
+        validTokens.set(token, { expiry, shortUrl });
+
+        res.json({ token, expiry, shortUrl });
+    } catch (error) {
+        console.error('Key generation error:', error);
+        res.status(500).json({ error: 'Failed to generate key' });
+    }
+});
+
+// Validate key
+app.post('/api/validate-key', (req, res) => {
+    try {
+        const { token } = req.body;
+        if (!token) {
+            return res.status(400).json({ valid: false, error: 'Missing token' });
+        }
+        const tokenData = validTokens.get(token);
+        if (!tokenData || Date.now() > tokenData.expiry) {
+            validTokens.delete(token);
+            return res.status(401).json({ valid: false, error: 'Invalid or expired token' });
+        }
+        res.json({ valid: true, shortUrl: tokenData.shortUrl });
+    } catch (error) {
+        console.error('Key validation error:', error);
+        res.status(500).json({ valid: false, error: 'Failed to validate key' });
     }
 });
 

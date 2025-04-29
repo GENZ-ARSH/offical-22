@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GenZZ Library - Validating Access</title>
     <link rel="icon" href="./assets/favicon.ico">
+    <link href="./styles.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
@@ -84,11 +84,10 @@
         }
     </style>
     <script>
-        const BASE_API_URL = 'http://localhost:5000';
         const clickSound = new Audio('data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA');
         clickSound.volume = 0.3;
 
-        document.addEventListener('DOMContentLoaded', async function () {
+        document.addEventListener('DOMContentLoaded', function () {
             const darkModeEnabled = localStorage.getItem('darkMode') === 'enabled';
             if (darkModeEnabled) {
                 document.body.classList.add('dark-mode');
@@ -118,30 +117,7 @@
                         title: 'Access Denied',
                         text: 'Your access key is invalid or has expired. Generate a new key.',
                         icon: 'error',
-                        confirmButtonText: 'Go to Key Generator',
-                    }).then(() => {
-                        window.location.href = './index.html';
-                    });
-                    return;
-                }
-
-                const response = await fetch(`${BASE_API_URL}/api/validate-key`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ token }),
-                    credentials: 'include'
-                });
-                const result = await response.json();
-
-                if (!result.valid) {
-                    localStorage.removeItem('accessToken');
-                    localStorage.removeItem('accessTokenExpiry');
-                    localStorage.removeItem('shortUrl');
-                    Swal.fire({
-                        title: 'Access Denied',
-                        text: 'Invalid key. Generate a new one.',
-                        icon: 'error',
-                        confirmButtonText: 'Go to Key Generator',
+                        confirmButtonText: 'Go to Key Generator'
                     }).then(() => {
                         window.location.href = './index.html';
                     });
@@ -154,7 +130,7 @@
                     html: `Access granted! Library URL: <a href="${shortUrl}" target="_blank">${shortUrl}</a><br>Redirecting to library...`,
                     icon: 'success',
                     timer: 2000,
-                    showConfirmButton: false,
+                    showConfirmButton: false
                 }).then(() => {
                     window.location.href = './home.html';
                 });
@@ -164,7 +140,7 @@
                     title: 'Error',
                     text: 'Failed to validate key. Try again.',
                     icon: 'error',
-                    confirmButtonText: 'Go to Key Generator',
+                    confirmButtonText: 'Go to Key Generator'
                 }).then(() => {
                     window.location.href = './index.html';
                 });
