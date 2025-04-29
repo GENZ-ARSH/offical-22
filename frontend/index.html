@@ -1,3 +1,4 @@
+html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -84,11 +85,8 @@
         }
     </style>
     <script>
-        const BASE_API_URL = 'http://localhost:5000'; // Update to https://genzz-library-backend.onrender.com after deployment
-        const SHORT_URLS = {
-            '24hr': 'https://cutt.ly/genzz24hr', // Update with your manual short URL
-            '48hr': 'https://cutt.ly/genzz48hr'  // Update with your manual short URL
-        };
+        const BASE_API_URL = 'http://localhost:5000'; // Update to 'https://genzz-library-backend.onrender.com' after backend deployment
+        const HOME_URL = './home.html';
         const clickSound = new Audio('data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA');
         clickSound.volume = 0.3;
 
@@ -126,6 +124,7 @@
                     }
                 } catch (error) {
                     console.error('Footer click error:', error);
+                    Swal.fire('Error!', 'Admin login failed, bhai!', 'error');
                 }
             });
         });
@@ -277,3 +276,4 @@
     </footer>
 </body>
 </html>
+

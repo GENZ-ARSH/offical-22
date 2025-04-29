@@ -1,19 +1,9 @@
+toml
 [build]
   publish = "frontend"
-  command = "echo 'No build command needed'"
+  command = "echo 'No build command needed for static files'"
 
 [[redirects]]
   from = "/*"
   to = "/index.html"
-  status = 200
-  conditions = { "Cookie" = ["accessToken=;"] }
-
-[[redirects]]
-  from = "/protected.html"
-  to = "/protected.html"
-  status = 200
-
-[[redirects]]
-  from = "/admin.html"
-  to = "/admin.html"
   status = 200
