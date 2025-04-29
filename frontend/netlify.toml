@@ -1,7 +1,13 @@
-toml
 [build]
-  publish = "frontend"
-  command = "echo 'No build command needed for static files'"
+  base = ""
+  publish = "frontend"  # Static files (index.html, home.html, etc.)
+  command = "npm install --prefix backend"  # Install backend dependencies
+  functions = "netlify/functions"  # Functions folder
+
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/api/:splat"
+  status = 200
 
 [[redirects]]
   from = "/*"

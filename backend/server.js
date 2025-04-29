@@ -59,27 +59,36 @@ let books = [
 async function generateShortUrl(duration) {
   if (!LINK_PAYS_API_KEY) {
     console.error('Error: LINK_PAYS_API_KEY is not set.');
-    return `https://linkpays.io/default-${duration}`;
+    return process.env.NETLIFY_URL 
+      ? `${process.env.NETLIFY_URL}/home.html`
+      : 'http://localhost:5000/home.html';
   }
   try {
     const baseUrl = process.env.NETLIFY_URL 
       ? `${process.env.NETLIFY_URL}/home.html`
       : 'http://localhost:5000/home.html';
-    const apiUrl = `https://api.linkpays.io/shorten?url=${encodeURIComponent(baseUrl)}&apiKey=${LINK_PAYS_API_KEY}`;
+    console.log('Generating short URL for:', baseUrl);
+    const apiUrl = `https://linkpays.in/api?api=${LINK_PAYS_API_KEY}&url=${encodeURIComponent(baseUrl)}`;
+    console.log('Calling LinkPays API:', apiUrl);
     const response = await fetch(apiUrl, {
       method: 'GET',
       headers: { 'Content-Type': 'application/json' }
     });
     const data = await response.json();
-    if (data.shortUrl) {
-      return data.shortUrl;
+    console.log('LinkPays API response:', JSON.stringify(data, null, 2));
+    if (data.status === 'success' && data.shortenedUrl) {
+      return data.shortenedUrl;
     } else {
-      console.error('LinkPays API error:', data);
-      return `https://linkpays.io/default-${duration}`;
+      console.error('LinkPays API error:', data.message || data);
+      return process.env.NETLIFY_URL 
+        ? `${process.env.NETLIFY_URL}/home.html`
+        : 'http://localhost:5000/home.html';
     }
   } catch (error) {
     console.error('Error generating short URL:', error);
-    return `https://linkpays.io/default-${duration}`;
+    return process.env.NETLIFY_URL 
+      ? `${process.env.NETLIFY_URL}/home.html`
+      : 'http://localhost:5000/home.html';
   }
 }
 
@@ -99,6 +108,9 @@ app.post('/api/generate-key', async (req, res) => {
     const expiry = Date.now() + (duration === '24hr' ? 24 * 60 * 60 * 1000 : 48 * 60 * 60 * 1000);
     const token = generateToken({ userId, url }, expiresIn);
     const shortUrl = await generateShortUrl(duration);
+    if (!shortUrl) {
+      return res.status(500).json({ error: 'Failed to generate short URL' });
+    }
     res.json({ token, expiry, shortUrl });
   } catch (error) {
     console.error('Generate key error:', error);
@@ -116,6 +128,9 @@ app.post('/api/validate-key', (req, res) => {
         return res.status(401).json({ error: 'Invalid or expired token' });
       }
       const shortUrl = await generateShortUrl(decoded.url.includes('24hr') ? '24hr' : '48hr');
+      if (!shortUrl) {
+        return res.status(500).json({ error: 'Failed to generate short URL' });
+      }
       res.json({ success: true, shortUrl, expiry: decoded.exp * 1000 });
     });
   } catch (error) {
@@ -216,4 +231,4 @@ module.exports.handler = serverless(app);
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
-});
+})
