@@ -1,8 +1,8 @@
 [build]
   base = ""
-  publish = "frontend"  # Static files (index.html, home.html, etc.)
-  command = "npm install --prefix backend"  # Install backend dependencies
-  functions = "netlify/functions"  # Functions folder
+  publish = "frontend"
+  command = "npm install --prefix backend"
+  functions = "netlify/functions"
 
 [[redirects]]
   from = "/api/*"
@@ -11,5 +11,5 @@
 
 [[redirects]]
   from = "/*"
-  to = "/index.html"
+  to = "/home.html"
   status = 200

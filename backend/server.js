@@ -13,7 +13,7 @@ const app = express();
 // Dynamic CORS configuration
 const allowedOrigins = [
   'http://localhost:5000',
-  process.env.NETLIFY_URL || 'https://your-netlify-site.netlify.app'
+  process.env.NETLIFY_URL || 'https://genzz-1.netlify.app/'
 ];
 app.use(cors({
   origin: (origin, callback) => {
@@ -61,15 +61,14 @@ async function generateShortUrl(duration) {
     console.error('Error: LINK_PAYS_API_KEY is not set.');
     return process.env.NETLIFY_URL 
       ? `${process.env.NETLIFY_URL}/home.html`
-      : 'https://example.com/home.html';
+      : 'https://genzz-1.netlify.app//home.html';
   }
   try {
     const baseUrl = process.env.NETLIFY_URL 
       ? `${process.env.NETLIFY_URL}/home.html`
-      : 'https://example.com/home.html';
+      : 'https://genzz-1.netlify.app/.html';
     console.log('Generating short URL for:', baseUrl);
-    const encodedUrl = encodeURIComponent(baseUrl);
-    const apiUrl = `https://linkpays.in/api?api=${LINK_PAYS_API_KEY}&url=${encodedUrl}`;
+    const apiUrl = `https://linkpays.in/api?api=${LINK_PAYS_API_KEY}&url=${encodeURIComponent(baseUrl)}`;
     console.log('Calling LinkPays API:', apiUrl);
     const response = await fetch(apiUrl, {
       method: 'GET',
@@ -83,13 +82,13 @@ async function generateShortUrl(duration) {
       console.error('LinkPays API error:', data.message || data);
       return process.env.NETLIFY_URL 
         ? `${process.env.NETLIFY_URL}/home.html`
-        : 'https://example.com/home.html';
+        : 'https://genzz-1.netlify.app/home.html';
     }
   } catch (error) {
     console.error('Error generating short URL:', error);
     return process.env.NETLIFY_URL 
       ? `${process.env.NETLIFY_URL}/home.html`
-      : 'https://example.com/home.html';
+      : 'https://genzz-1.netlify.app/home.html';
   }
 }
 
@@ -232,4 +231,4 @@ module.exports.handler = serverless(app);
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
-});
+})
